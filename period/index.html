@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f8dce8">
+<title>月月 · 经期小手账</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;padding:18px 14px 40px;background:linear-gradient(145deg,#fff5f8,#f8f3ff,#f3f9ff);color:#594b55;font-family:system-ui,-apple-system,sans-serif}
+main{max-width:520px;margin:auto}
+header,.panel,.stat{background:#ffffffdf;border-radius:25px;padding:18px;box-shadow:0 7px 25px #b98ca518}
+header{position:relative;overflow:hidden}
+header:after{content:"✿";position:absolute;right:20px;top:5px;font-size:65px;color:#f6dce7}
+.kicker{font-size:11px;letter-spacing:2px;color:#b77b98}
+h1{font-size:26px;margin:7px 0}
+.subtitle,.hint{font-size:13px;line-height:1.7;color:#9a8791}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.stat small{font-size:12px;color:#9a8791}
+.stat strong{display:block;font-size:22px;color:#bd7898;margin:5px 0}
+.stat span{font-size:12px;color:#9a8791}
+.panel{margin:13px 0}
+h2{font-size:16px;margin:0 0 13px}
+.calendar-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.calendar-head button{border:0;border-radius:12px;padding:8px 14px;background:#f8edf2;color:#a86f8c;font-size:18px}
+.week,.days{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;text-align:center}
+.week div{font-size:11px;color:#ad9ba4;padding:6px 0}
+.day{aspect-ratio:1;border-radius:13px;display:grid;place-items:center;font-size:13px}
+.day.muted{color:#d1c5cb}
+.day.period{background:#f9dce8;color:#a95d80;font-weight:bold}
+.day.predicted{background:#eee7fa;color:#8b78b0}
+.day.today{outline:2px solid #c18aa3;outline-offset:-2px}
+.legend{display:flex;gap:13px;flex-wrap:wrap;margin-top:13px;font-size:11px;color:#9a8791}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#f2c6d8;margin-right:4px}
+.purple{background:#d9c9f1}
+.row{display:flex;gap:9px;flex-wrap:wrap}
+.btn{border:0;border-radius:15px;padding:12px 15px;font-size:14px;font-weight:650;background:#f4dce7;color:#965d78}
+.primary{background:#d98eac;color:white}
+.soft{background:#eee8fa;color:#806da5}
+.full{width:100%;margin-top:8px}
+.field{flex:1;min-width:115px;margin:10px 0}
+label{display:block;font-size:12px;color:#9a8791;margin-bottom:6px}
+input{width:100%;padding:12px;border:1px solid #efdee6;border-radius:12px;background:#fffdfd;color:#594b55;font:inherit}
+.entry{display:flex;justify-content:space-between;align-items:center;padding:12px;background:#fff8fb;border-radius:14px;margin:8px 0;font-size:13px}
+.entry small{display:block;color:#9a8791;margin-top:4px}
+.entry button{border:0;background:none;color:#b17c96}
+.modal{display:none;position:fixed;inset:0;background:#4c34465c;align-items:center;justify-content:center;padding:22px;z-index:5}
+.modal.show{display:flex}
+.dialog{width:100%;max-width:360px;background:#fffafc;border-radius:27px;padding:25px;text-align:center}
+.flower{font-size:38px}
+.dialog h2{font-size:21px;margin:8px}
+.dialog p{font-size:14px;line-height:1.7;color:#9a8791}
+.dialog .row{justify-content:center;margin-top:18px}
+.dialog .btn{min-width:110px}
+.toast{display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#594b55;color:white;padding:11px 18px;border-radius:20px;font-size:13px;z-index:9}
+</style>
+</head>
+<body>
+<main>
+<header>
+<div class="kicker">A LITTLE CYCLE JOURNAL</div>
+<h1>月月 · 经期小手账 🌷</h1>
+<div class="subtitle">慢慢记录身体的节奏。每一次变化，都值得被温柔对待。</div>
+</header>
+
+<div class="stats">
+<div class="stat"><small>下一次预计开始</small><strong id="nextDate">—</strong><span id="countdown">正在计算</span></div>
+<div class="stat"><small>预计经期长度</small><strong id="durationStat">5天</strong><span>可以在设置里修改</span></div>
+</div>
+
+<section class="panel">
+<div class="calendar-head">
+<button id="prev">‹</button>
+<b id="monthLabel"></b>
+<button id="next">›</button>
+</div>
+<div class="week">
+<div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>
+</div>
+<div class="days" id="days"></div>
+<div class="legend">
+<span><i class="dot"></i>经期记录</span>
+<span><i class="dot purple"></i>预计开始</span>
+<span>描边：今天</span>
+</div>
+</section>
+
+<section class="panel">
+<h2>今天的记录</h2>
+<div class="field">
+<label>如果已经来了，也可以选择实际开始日期</label>
+<input type="date" id="startInput">
+</div>
+<div class="row">
+<button class="btn primary" id="recordBtn">记录今天 / 所选日期</button>
+<button class="btn soft" id="notTodayBtn">还没来，顺延一天</button>
+</div>
+<p class="hint">到了预计日期，打开页面时会弹出确认。选择「还没」只会把预计日期往后推一天，不会改动已有记录。</p>
+</section>
+
+<section class="panel">
+<h2>我的小设置</h2>
+<div class="row">
+<div class="field"><label>周期长度（天）</label><input id="cycleInput" type="number" min="15" max="60" value="25"></div>
+<div class="field"><label>经期长度（天）</label><input id="durationInput" type="number" min="1" max="15" value="5"></div>
+</div>
+<button class="btn soft full" id="saveSettings">保存设置</button>
+</section>
+
+<section class="panel">
+<h2>以前的日子</h2>
+<div id="history"></div>
+<p class="hint">记录保存在当前设备的浏览器里。建议偶尔导出备份，清理浏览器数据前先备份哦。</p>
+<div class="row">
+<button class="btn soft" id="exportBtn">导出备份</button>
+<button class="btn soft" id="importBtn">导入备份</button>
+<input type="file" id="fileInput" accept="application/json" hidden>
+</div>
+</section>
+<p class="hint" style="text-align:center">给身体一点耐心，也给自己一点温柔。 ✿</p>
+</main>
+
+<div class="modal" id="modal">
+<div class="dialog">
+<div class="flower">🌸</div>
+<h2>今天的小客人来了吗？</h2>
+<p id="modalText">今天是预计日期，要不要记下来？</p>
+<div class="row">
+<button class="btn primary" id="yesBtn">来了</button>
+<button class="btn soft" id="noBtn">还没</button>
+</div>
+</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const KEY="yueyue_period_v1";
+const initial={
+cycle:25,
+duration:5,
+records:[
+["2026-01-07","2026-01-11"],
+["2026-02-01","2026-02-05"],
+["2026-02-24","2026-02-28"],
+["2026-03-20","2026-03-24"],
+["2026-04-11","2026-04-15"],
+["2026-05-06","2026-05-10"],
+["2026-05-31","2026-06-04"],
+["2026-06-25","2026-06-29"],
+["2026-07-21","2026-07-25"],
+["2026-08-15","2026-08-19"],
+["2026-09-09","2026-09-13"],
+["2026-10-03","2026-10-07"],
+["2026-10-28","2026-11-03"]
+],
+expected:"2026-11-22",
+lastPrompt:""
+};
+
+let data;
+try{data=JSON.parse(localStorage.getItem(KEY))||initial}
+catch(e){data=initial}
+if(!data.records)data=initial;
+
+let view=new Date();
+view.setDate(1);
+const $=id=>document.getElementById(id);
+
+function iso(d){
+const x=new Date(d);
+return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0");
+}
+function parse(s){return new Date(s+"T12:00:00")}
+function add(s,n){
+let d=parse(s);
+d.setDate(d.getDate()+n);
+return iso(d);
+}
+function fmt(s){
+let d=parse(s);
+return (d.getMonth()+1)+"月"+d.getDate()+"日";
+}
+function save(){
+localStorage.setItem(KEY,JSON.stringify(data));
+render();
+}
+function toast(s){
+$("toast").textContent=s;
+$("toast").style.display="block";
+setTimeout(()=>$("toast").style.display="none",2200);
+}
+
+function render(){
+$("cycleInput").value=data.cycle;
+$("durationInput").value=data.duration;
+$("durationStat").textContent=data.duration+"天";
+$("nextDate").textContent=fmt(data.expected);
+
+let diff=Math.round((parse(data.expected)-parse(iso(new Date())))/86400000);
+$("countdown").textContent=diff>0?"还有 "+diff+" 天":diff===0?"预计就是今天":"已超过 "+Math.abs(diff)+" 天，等你确认";
+
+$("monthLabel").textContent=view.getFullYear()+"年"+(view.getMonth()+1)+"月";
+let first=new Date(view.getFullYear(),view.getMonth(),1);
+let start=new Date(first);
+start.setDate(1-first.getDay());
+let out="";
+
+for(let i=0;i<42;i++){
+let d=new Date(start);
+d.setDate(start.getDate()+i);
+let s=iso(d);
+let inMonth=d.getMonth()===view.getMonth();
+let isPeriod=data.records.some(([a,b])=>s>=a&&s<=b);
+let cls="day"+(inMonth?"":" muted")+(isPeriod?" period":"")+(s===iso(new Date())?" today":"")+(s===data.expected?" predicted":"");
+out+='<div class="'+cls+'">'+d.getDate()+"</div>";
+}
+$("days").innerHTML=out;
+
+$("history").innerHTML=data.records.slice().reverse().map((r,i)=>
+'<div class="entry"><div><b>'+fmt(r[0])+" — "+fmt(r[1])+'</b><small>'+ (Math.round((parse(r[1])-parse(r[0]))/86400000)+1)+'天</small></div><button data-del="'+(data.records.length-1-i)+'">删除</button></div>'
+).join("")||'<p class="hint">还没有记录</p>';
+}
+
+function record(s){
+if(!s)return;
+let end=add(s,Number(data.duration)-1);
+if(!data.records.some(r=>r[0]===s)){
+data.records.push([s,end]);
+data.records.sort((a,b)=>a[0].localeCompare(b[0]));
+}
+data.expected=add(s,Number(data.cycle));
+data.lastPrompt="";
+save();
+$("modal").classList.remove("show");
+toast("记下啦，照顾好自己。");
+}
+
+$("prev").onclick=()=>{view.setMonth(view.getMonth()-1);render()};
+$("next").onclick=()=>{view.setMonth(view.getMonth()+1);render()};
+$("recordBtn").onclick=()=>record($("startInput").value||iso(new Date()));
+
+function postpone(){
+data.expected=add(data.expected,1);
+data.lastPrompt=iso(new Date());
+save();
+toast("好，预计日期顺延一天。");
+}
+$("notTodayBtn").onclick=postpone;
+
+$("saveSettings").onclick=()=>{
+let c=Number($("cycleInput").value);
+let d=Number($("durationInput").value);
+if(c<15||c>60||d<1||d>15){
+toast("周期请设15–60天，经期请设1–15天");
+return;
+}
+data.cycle=c;
+data.duration=d;
+save();
+toast("设置保存好了。");
+};
+
+$("history").onclick=e=>{
+let b=e.target.closest("[data-del]");
+if(b&&confirm("确定删除这条记录吗？")){
+data.records.splice(Number(b.dataset.del),1);
+save();
+}
+};
+
+$("yesBtn").onclick=()=>record(iso(new Date()));
+$("noBtn").onclick=()=>{
+$("modal").classList.remove("show");
+postpone();
+};
+
+$("exportBtn").onclick=()=>{
+let a=document.createElement("a");
+let u=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}));
+a.href=u;
+a.download="月月经期备份.json";
+a.click();
+URL.revokeObjectURL(u);
+};
+
+$("importBtn").onclick=()=>$("fileInput").click();
+$("fileInput").onchange=async e=>{
+try{
+let v=JSON.parse(await e.target.files[0].text());
+if(!Array.isArray(v.records)||!v.expected)throw Error();
+data=v;
+save();
+toast("备份导入成功");
+}catch(err){toast("文件不正确，没能导入")}
+};
+
+render();
+
+const today=iso(new Date());
+if(today>=data.expected&&data.lastPrompt!==today){
+$("modalText").textContent="预计日期是 "+fmt(data.expected)+"。今天要不要记下来？";
+$("modal").classList.add("show");
+}
+</script>
+</body>
+</html>
