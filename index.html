@@ -5,118 +5,348 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>零工记工本</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#f5f5fa;color:#29283a;font:15px system-ui,sans-serif;padding:16px;max-width:680px;margin:auto}h2{margin:4px 0}p{color:#777;margin:6px 0 16px}.card{background:white;padding:16px;border-radius:16px;margin:12px 0;box-shadow:0 2px 10px #2525450a}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stats div{background:#f1edff;padding:12px 6px;border-radius:12px;text-align:center}.stats b{display:block;font-size:18px;margin-top:6px;overflow-wrap:anywhere}.stats small{color:#666}label{display:block;margin:12px 0 5px}input,textarea{font:inherit;width:100%;padding:11px;border:1px solid #ddd;border-radius:10px;background:white;color:#29283a}input[type=checkbox]{width:auto}textarea{min-height:65px}button{border:0;border-radius:10px;padding:10px 13px;font:inherit;background:#eee;color:#333;margin:4px 3px 4px 0}button.primary{background:#6652c8;color:white}button.danger{background:#ffeded;color:#a22}.actions{display:flex;gap:6px;flex-wrap:wrap}.actions button{flex:1}.item{border-top:1px solid #eee;padding:12px 0}.item:first-child{border:0}.muted{font-size:13px;color:#777}.money{font-weight:700}.empty{text-align:center;color:#888;padding:20px}h3{margin:0 0 10px}.check{display:flex;align-items:center;gap:8px}.check label{margin:12px 0}#file{display:none}
+*{box-sizing:border-box}
+body{margin:0;padding:16px;max-width:680px;margin:auto;background:#f6f4fa;color:#302d3b;font:15px system-ui,sans-serif}
+h2{margin:5px 0}
+p{color:#777}
+.card{background:white;padding:16px;border-radius:16px;margin:14px 0;box-shadow:0 2px 10px #00000008}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stats div{background:#f0ebff;padding:12px 5px;border-radius:12px;text-align:center}
+.stats small{color:#777;font-size:12px}
+.stats b{display:block;font-size:17px;margin-top:6px;overflow-wrap:anywhere}
+label{display:block;margin:12px 0 6px}
+input,textarea{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;font:inherit;background:white;color:#302d3b}
+textarea{min-height:65px}
+button{padding:10px 13px;border:0;border-radius:10px;background:#eee;color:#333;font:inherit;margin:4px 3px 4px 0}
+.primary{background:#6b55c8;color:white}
+.danger{background:#ffeded;color:#a33}
+.actions{display:flex;flex-wrap:wrap;gap:5px}
+.actions button{flex:1}
+.preview{margin-top:14px;padding:14px;background:#f0ebff;border-radius:12px}
+.preview strong{display:block;font-size:25px;color:#624bb9;margin-top:5px}
+.item{padding:14px 0;border-top:1px solid #eee}
+.item:first-child{border-top:0}
+.money{font-size:19px;font-weight:bold;margin:7px 0}
+.muted{font-size:13px;color:#888}
+.empty{text-align:center;padding:20px;color:#999}
+.check{display:flex;align-items:center;gap:8px}
+.check input{width:auto}
+.check label{margin:12px 0}
+#file{display:none}
 </style>
 </head>
 <body>
+
 <h2>我的零工记工本</h2>
-<p>每天记一笔，工钱不糊涂。</p>
+<p>套膜计件记录 · 每把 1.8 元</p>
 
 <div class="card">
-<div class="stats">
-<div><small>本月应得</small><b id="total">¥0</b></div>
-<div><small>已到账</small><b id="received">¥0</b></div>
-<div><small>待收款</small><b id="pending">¥0</b></div>
-</div>
-<label>统计月份</label>
-<input type="month" id="month">
-</div>
-
-<div class="card">
-<h3 id="formTitle">记一笔工时</h3>
-<form id="form">
-<label>工作日期</label><input type="date" id="date" required>
-<label>工作地点 / 店名</label><input id="job" placeholder="例如：零工店、仓库">
-<label>工作时长（小时）</label><input type="number" id="hours" min="0" step="0.25" placeholder="例如：8">
-<label>应得工资（元）</label><input type="number" id="pay" min="0" step="0.01" placeholder="例如：180" required>
-<div class="check"><input type="checkbox" id="paid"><label for="paid">这笔工资已经到账</label></div>
-<label>备注</label><textarea id="note" placeholder="例如：加班、交通费、结算情况"></textarea>
-<div class="actions"><button class="primary" type="submit" id="save">保存记录</button><button type="button" id="cancel" hidden>取消编辑</button></div>
-</form>
+  <div class="stats">
+    <div><small>本月应得</small><b id="total">¥0.00</b></div>
+    <div><small>已到账</small><b id="received">¥0.00</b></div>
+    <div><small>待收款</small><b id="pending">¥0.00</b></div>
+  </div>
+  <label>查看月份</label>
+  <input type="month" id="month">
 </div>
 
 <div class="card">
-<h3>工作记录</h3>
-<div class="actions">
-<button id="csv">导出 CSV 表格</button>
-<button id="backup">备份数据</button>
-<button id="importBtn">导入备份</button>
-<input id="file" type="file" accept=".json,application/json">
+  <h3 id="formTitle">记一笔套膜</h3>
+
+  <form id="form">
+    <label>工作日期</label>
+    <input type="date" id="date" required>
+
+    <label>今天做了多少把？</label>
+    <input type="number" id="quantity" min="0" step="1"
+      placeholder="输入今天完成的把数" required>
+
+    <label>每把单价（元）</label>
+    <input type="number" id="price" min="0" step="0.01"
+      value="1.8" required>
+
+    <div class="preview">
+      <span class="muted">今天预计工资</span>
+      <strong id="preview">¥0.00</strong>
+    </div>
+
+    <label>工作地点 / 名称</label>
+    <input id="job" placeholder="例如：套膜">
+
+    <div class="check">
+      <input type="checkbox" id="paid">
+      <label for="paid">这笔钱已经到账</label>
+    </div>
+
+    <label>备注</label>
+    <textarea id="note" placeholder="选填"></textarea>
+
+    <div class="actions">
+      <button class="primary" type="submit" id="save">保存记录</button>
+      <button type="button" id="cancel" hidden>取消编辑</button>
+    </div>
+  </form>
 </div>
-<div id="records"></div>
+
+<div class="card">
+  <h3>每天的记录</h3>
+  <div class="actions">
+    <button type="button" id="backup">备份数据</button>
+    <button type="button" id="importBtn">导入备份</button>
+    <button type="button" id="csv">导出表格</button>
+    <input type="file" id="file" accept=".json,application/json">
+  </div>
+  <div id="records"></div>
 </div>
-<p class="muted">记录保存在当前浏览器中。清理浏览器数据或更换手机可能导致记录丢失，请定期备份。</p>
+
+<p class="muted">数据保存在当前浏览器中。记得定期备份哦。</p>
 
 <script>
 const $=id=>document.getElementById(id);
-const key='lingong_jigongben_v1';
+const KEY='lingong_jigongben_v1';
+const PRICE_KEY='lingong_unit_price';
+
 let data=[];
 let editing=null;
-try{data=JSON.parse(localStorage.getItem(key)||'[]');if(!Array.isArray(data))data=[]}catch(e){data=[]}
-const today=()=>{let d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+
+try{
+  const saved=JSON.parse(localStorage.getItem(KEY)||'[]');
+  if(Array.isArray(saved))data=saved;
+}catch(e){
+  data=[];
+}
+
+function today(){
+  const d=new Date();
+  return d.getFullYear()+'-'+
+    String(d.getMonth()+1).padStart(2,'0')+'-'+
+    String(d.getDate()).padStart(2,'0');
+}
+
+function money(n){
+  return '¥'+Number(n||0).toLocaleString('zh-CN',{
+    minimumFractionDigits:2,
+    maximumFractionDigits:2
+  });
+}
+
+function saveData(){
+  localStorage.setItem(KEY,JSON.stringify(data));
+  render();
+}
+
+function escapeHTML(value){
+  return String(value??'').replace(/[&<>"']/g,c=>({
+    '&':'&amp;',
+    '<':'&lt;',
+    '>':'&gt;',
+    '"':'&quot;',
+    "'":'&#39;'
+  }[c]));
+}
+
 $('date').value=today();
 $('month').value=today().slice(0,7);
-const money=n=>'¥'+Number(n||0).toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2});
-function persist(){localStorage.setItem(key,JSON.stringify(data));render()}
-function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+$('price').value=localStorage.getItem(PRICE_KEY)||'1.8';
+
+function updatePreview(){
+  const quantity=Number($('quantity').value)||0;
+  const price=Number($('price').value)||0;
+  $('preview').textContent=money(quantity*price);
+}
+
+$('quantity').addEventListener('input',updatePreview);
+$('price').addEventListener('input',updatePreview);
+
 function render(){
-let m=$('month').value;
-let rows=data.filter(x=>!m||x.date.startsWith(m));
-let total=rows.reduce((s,x)=>s+Number(x.pay||0),0);
-let received=rows.filter(x=>x.paid).reduce((s,x)=>s+Number(x.pay||0),0);
-$('total').textContent=money(total);$('received').textContent=money(received);$('pending').textContent=money(total-received);
-rows.sort((a,b)=>b.date.localeCompare(a.date));
-$('records').innerHTML=rows.length?rows.map(x=>`<div class="item">
-<b>${esc(x.date)}</b>　<span>${x.paid?'已到账':'待收款'}</span>
-<div class="money">${money(x.pay)} <span class="muted">${x.hours?esc(x.hours)+' 小时':''}</span></div>
-<div>${esc(x.job||'未填写工作地点')}</div>
-${x.note?`<div class="muted">${esc(x.note)}</div>`:''}
-<div class="actions"><button data-edit="${esc(x.id)}">编辑</button><button data-paid="${esc(x.id)}">${x.paid?'改为未到账':'标记已到账'}</button><button class="danger" data-del="${esc(x.id)}">删除</button></div>
-</div>`).join(''):'<div class="empty">这个月还没有记录，记下第一笔吧。</div>';
+  const month=$('month').value;
+  const rows=data.filter(x=>!month||String(x.date||'').startsWith(month));
+
+  const total=rows.reduce((s,x)=>s+Number(x.pay||0),0);
+  const received=rows.filter(x=>x.paid).reduce((s,x)=>s+Number(x.pay||0),0);
+
+  $('total').textContent=money(total);
+  $('received').textContent=money(received);
+  $('pending').textContent=money(total-received);
+
+  rows.sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
+
+  if(!rows.length){
+    $('records').innerHTML='<div class="empty">这个月还没有记录。</div>';
+    return;
+  }
+
+  $('records').innerHTML=rows.map(x=>{
+    const hasQuantity=x.quantity!==undefined&&x.quantity!==null;
+    const detail=hasQuantity
+      ? `${escapeHTML(x.quantity)} 把 × ${money(x.price??x.unitPrice??1.8)}`
+      : '历史记录';
+
+    return `
+      <div class="item">
+        <b>${escapeHTML(x.date||'未填写日期')}</b>
+        <span class="muted">${x.paid?' · 已到账':' · 待收款'}</span>
+        <div class="money">${money(x.pay)}</div>
+        <div>${detail}</div>
+        <div>${escapeHTML(x.job||'')}</div>
+        ${x.note||x.notes?`<div class="muted">${escapeHTML(x.note||x.notes)}</div>`:''}
+        <div class="actions">
+          <button data-edit="${escapeHTML(x.id)}">编辑</button>
+          <button data-paid="${escapeHTML(x.id)}">${x.paid?'改为未到账':'标记已到账'}</button>
+          <button class="danger" data-del="${escapeHTML(x.id)}">删除</button>
+        </div>
+      </div>
+    `;
+  }).join('');
 }
-$('month').onchange=render;
-$('form').onsubmit=e=>{
-e.preventDefault();
-let old=data.find(x=>x.id===editing);
-let item={id:editing||String(Date.now())+'-'+Math.random().toString(36).slice(2,7),date:$('date').value,job:$('job').value.trim(),hours:$('hours').value,pay:Number($('pay').value),paid:$('paid').checked,note:$('note').value.trim()};
-if(old)item.paid=$('paid').checked;
-if(editing)data=data.map(x=>x.id===editing?item:x);else data.push(item);
-reset();persist();
-};
-function reset(){editing=null;$('form').reset();$('date').value=today();$('formTitle').textContent='记一笔工时';$('save').textContent='保存记录';$('cancel').hidden=true}
-$('cancel').onclick=reset;
-$('records').onclick=e=>{
-let b=e.target.closest('button');if(!b)return;
-let id=b.dataset.edit||b.dataset.del||b.dataset.paid;
-let x=data.find(v=>v.id===id);if(!x)return;
-if(b.dataset.edit!==undefined){
-editing=id;$('date').value=x.date;$('job').value=x.job||'';$('hours').value=x.hours||'';$('pay').value=x.pay;$('paid').checked=!!x.paid;$('note').value=x.note||'';
-$('formTitle').textContent='编辑记录';$('save').textContent='保存修改';$('cancel').hidden=false;window.scrollTo(0,0);
-}else if(b.dataset.del!==undefined){
-if(confirm('确定删除这笔记录吗？')){data=data.filter(v=>v.id!==id);persist()}
-}else{ x.paid=!x.paid;persist() }
-};
-function download(name,content,type){
-let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([content],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)
+
+$('month').addEventListener('change',render);
+
+function resetForm(){
+  editing=null;
+  $('form').reset();
+  $('date').value=today();
+  $('price').value=localStorage.getItem(PRICE_KEY)||'1.8';
+  $('formTitle').textContent='记一笔套膜';
+  $('save').textContent='保存记录';
+  $('cancel').hidden=true;
+  updatePreview();
 }
-$('backup').onclick=()=>download('零工记工本备份.json',JSON.stringify(data,null,2),'application/json');
-$('csv').onclick=()=>{
-let head=['日期','工作地点','工时','应得工资','已到账','备注'];
-let rows=data.map(x=>[x.date,x.job,x.hours,x.pay,x.paid?'是':'否',x.note]);
-let csv=[head,...rows].map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');
-download('零工记工本.csv','\uFEFF'+csv,'text/csv;charset=utf-8')
-};
-$('importBtn').onclick=()=>$('file').click();
-$('file').onchange=async e=>{
-let f=e.target.files[0];if(!f)return;
-try{
-let a=JSON.parse(await f.text());
-if(!Array.isArray(a)||!a.every(x=>x&&x.date!==undefined&&x.pay!==undefined))throw Error();
-if(confirm('导入会替换当前全部记录，建议先备份。确定继续吗？')){data=a.map(x=>({...x,id:String(x.id||Date.now()+Math.random())}));persist();reset();alert('导入完成')}
-}catch(err){alert('文件格式不正确，请选择记工本导出的 JSON 备份文件')}
-e.target.value='';
-};
+
+$('form').addEventListener('submit',e=>{
+  e.preventDefault();
+
+  const quantity=Number($('quantity').value);
+  const price=Number($('price').value);
+
+  if(!Number.isFinite(quantity)||quantity<0||
+     !Number.isFinite(price)||price<0){
+    alert('把数和单价请填写正确哦');
+    return;
+  }
+
+  const item={
+    id:editing||String(Date.now())+'-'+Math.random().toString(36).slice(2,7),
+    date:$('date').value,
+    quantity:quantity,
+    price:price,
+    pay:Math.round(quantity*price*100)/100,
+    job:$('job').value.trim(),
+    paid:$('paid').checked,
+    note:$('note').value.trim()
+  };
+
+  if(editing){
+    data=data.map(x=>String(x.id)===String(editing)?item:x);
+  }else{
+    data.push(item);
+  }
+
+  localStorage.setItem(PRICE_KEY,String(price));
+  resetForm();
+  saveData();
+});
+
+$('cancel').addEventListener('click',resetForm);
+
+$('records').addEventListener('click',e=>{
+  const b=e.target.closest('button');
+  if(!b)return;
+
+  const id=b.dataset.edit??b.dataset.del??b.dataset.paid;
+  const x=data.find(v=>String(v.id)===String(id));
+  if(!x)return;
+
+  if(b.dataset.edit!==undefined){
+    editing=x.id;
+    $('date').value=x.date||today();
+    $('quantity').value=x.quantity??'';
+    $('price').value=x.price??x.unitPrice??1.8;
+    $('job').value=x.job||'';
+    $('paid').checked=!!x.paid;
+    $('note').value=x.note||x.notes||'';
+    $('formTitle').textContent='编辑记录';
+    $('save').textContent='保存修改';
+    $('cancel').hidden=false;
+    updatePreview();
+    window.scrollTo(0,0);
+
+  }else if(b.dataset.del!==undefined){
+    if(confirm('确定删除这笔记录吗？')){
+      data=data.filter(v=>String(v.id)!==String(id));
+      saveData();
+    }
+
+  }else{
+    x.paid=!x.paid;
+    saveData();
+  }
+});
+
+function download(filename,content,type){
+  const url=URL.createObjectURL(new Blob([content],{type}));
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=filename;
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1500);
+}
+
+$('backup').addEventListener('click',()=>{
+  download(
+    '零工记工本备份.json',
+    JSON.stringify(data,null,2),
+    'application/json'
+  );
+});
+
+$('importBtn').addEventListener('click',()=>{
+  $('file').click();
+});
+
+$('file').addEventListener('change',async()=>{
+  const file=$('file').files[0];
+  if(!file)return;
+
+  try{
+    const imported=JSON.parse(await file.text());
+    if(!Array.isArray(imported))throw new Error();
+
+    if(confirm('导入备份会替换当前记录，确定继续吗？')){
+      data=imported;
+      saveData();
+      alert('备份导入成功！');
+    }
+  }catch(e){
+    alert('文件格式不正确，无法导入。');
+  }
+
+  $('file').value='';
+});
+
+$('csv').addEventListener('click',()=>{
+  const rows=[
+    ['日期','把数','单价','工资','工作地点','到账状态','备注'],
+    ...data.map(x=>[
+      x.date||'',
+      x.quantity??'',
+      x.price??x.unitPrice??'',
+      x.pay??0,
+      x.job||'',
+      x.paid?'已到账':'待收款',
+      x.note||x.notes||''
+    ])
+  ];
+
+  const csv='\uFEFF'+rows.map(row=>
+    row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')
+  ).join('\r\n');
+
+  download('零工记工本.csv',csv,'text/csv;charset=utf-8');
+});
+
 render();
+updatePreview();
 </script>
 </body>
 </html>
